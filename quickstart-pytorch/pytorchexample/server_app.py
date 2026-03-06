@@ -2,10 +2,16 @@
 
 import torch
 from flwr.app import ArrayRecord, ConfigRecord, Context, MetricRecord
+
+# ConfigRecord stores the configuration information whereas the context stores the run configuration and other information about the current run. 
+# The ArrayRecord is used to store the model parameters as arrays, which can be easily sent between the server and clients during training and evaluation.
+#  The MetricRecord is used to store the evaluation metrics, such as accuracy and loss, which can be returned after evaluating the global model on the test set.
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
 
 from pytorchexample.task import Net, load_centralized_dataset, test
+
+# Net is the neural network architehcture
 
 # Create ServerApp
 app = ServerApp()
