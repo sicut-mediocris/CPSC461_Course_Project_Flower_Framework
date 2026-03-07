@@ -1,4 +1,4 @@
-"""pytorchexample: A Flower / PyTorch app."""
+"""flower: A Flower / PyTorch app."""
 
 import torch
 from flwr.app import ArrayRecord, ConfigRecord, Context, MetricRecord
@@ -10,7 +10,7 @@ from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
 from typing import List, Tuple
 
-from pytorchexample.task import Net, load_centralized_dataset, test
+from flower.task import Net, load_centralized_dataset, test
 
 # Net is the neural network architehcture
 

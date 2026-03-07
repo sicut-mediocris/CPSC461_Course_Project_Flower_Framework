@@ -1,4 +1,4 @@
-"""pytorchexample: A Flower / PyTorch app."""
+"""flower: A Flower / PyTorch app."""
 
 import torch
 import torch.nn as nn

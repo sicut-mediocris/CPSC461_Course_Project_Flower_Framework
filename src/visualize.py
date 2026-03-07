@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from torchvision.transforms import Compose, Normalize, ToTensor
 from torch.utils.data import DataLoader
 from datasets import load_dataset
-from pytorchexample.task import Net
+from flower.task import Net
 
 # Fashion-MNIST class names
 FASHION_MNIST_CLASSES = [
