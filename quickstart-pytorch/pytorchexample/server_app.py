@@ -8,6 +8,7 @@ from flwr.app import ArrayRecord, ConfigRecord, Context, MetricRecord
 #  The MetricRecord is used to store the evaluation metrics, such as accuracy and loss, which can be returned after evaluating the global model on the test set.
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
+from typing import List, Tuple
 
 from pytorchexample.task import Net, load_centralized_dataset, test
 
@@ -65,3 +66,10 @@ def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
 
     # Return the evaluation metrics
     return MetricRecord({"accuracy": test_acc, "loss": test_loss})
+
+def weighted_average(metrics):
+    """A function that aggregates metrics."""
+    total_examples = sum(m["num-examples"] for m in metrics)
+    weighted_acc = sum(m["accuracy"] * m["num-examples"] for m in metrics) / total_examples
+    weighted_loss = sum(m["train_loss"] * m["num-examples"] for m in metrics) / total_examples
+    return {"accuracy": weighted_acc, "train_loss": weighted_loss}

@@ -16,7 +16,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = Net().to(device)
 
 # Load the saved model 
-# model.load_state_dict(torch.load("path_to_saved_model.pt"))
+model.load_state_dict(torch.load("final_model.pt"))
 
 pytorch_transforms = Compose([ToTensor(), Normalize((0.5,), (0.5,))])
 
