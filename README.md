@@ -15,7 +15,7 @@ This repository uses a **Source (src) Layout**. This modular structure keeps the
 ```text
 .
 ├── src/                    # 🧠 CORE FLOWER APPS
-│   ├── flower/     # Primary implementation (PyTorch + Security)
+│   ├── flower/             # Primary implementation (PyTorch + Security)
 │   │   ├── __init__.py
 │   │   ├── client_app.py   # Client logic & Defense injections
 │   │   ├── server_app.py   # Server logic & Strategy
