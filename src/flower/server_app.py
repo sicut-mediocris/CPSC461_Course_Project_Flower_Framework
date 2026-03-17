@@ -2,13 +2,13 @@
 
 import torch
 from flwr.app import ArrayRecord, ConfigRecord, Context, MetricRecord
+from flower.dlg_attack import run_dlg_attack, weight_delta_to_grads
 
 # ConfigRecord stores the configuration information whereas the context stores the run configuration and other information about the current run. 
 # The ArrayRecord is used to store the model parameters as arrays, which can be easily sent between the server and clients during training and evaluation.
 #  The MetricRecord is used to store the evaluation metrics, such as accuracy and loss, which can be returned after evaluating the global model on the test set.
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
-from typing import List, Tuple
 
 from flower.task import Net, load_centralized_dataset, test
 
@@ -31,6 +31,9 @@ def main(grid: Grid, context: Context) -> None:
     global_model = Net()
     arrays = ArrayRecord(global_model.state_dict())
 
+    # Snapshot initial weights — used by DLG to compute ΔW after training
+    w_initial = {k: v.clone() for k, v in global_model.state_dict().items()}
+
     # Initialize FedAvg strategy
     strategy = FedAvg(fraction_evaluate=fraction_evaluate)
 
@@ -45,8 +48,31 @@ def main(grid: Grid, context: Context) -> None:
 
     # Save final model to disk
     print("\nSaving final model to disk...")
-    state_dict = result.arrays.to_torch_state_dict()
-    torch.save(state_dict, "final_model.pt")
+    w_final = result.arrays.to_torch_state_dict()
+    torch.save(w_final, "final_model.pt")
+
+    # --- DLG Attack (optional) ---
+    # Treats ΔW = w_initial - w_final as a proxy for the client gradient.
+    # Under SGD: w_after = w_before - lr * grad  =>  grad ≈ ΔW / lr
+    # The server runs DLG to attempt reconstruction of client training images.
+    if context.run_config.get("dlg-attack", False):
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        dlg_steps = int(context.run_config.get("dlg-steps", 300))
+
+        attack_model = Net()
+        attack_model.load_state_dict(w_initial)
+        attack_model.to(device)
+
+        true_grads = weight_delta_to_grads(w_initial, w_final, lr, attack_model)
+        true_grads = [g.to(device) for g in true_grads]
+
+        run_dlg_attack(
+            model=attack_model,
+            true_grads=true_grads,
+            num_steps=dlg_steps,
+            device=str(device),
+            save_dir="dlg_results",
+        )
 
 
 def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:

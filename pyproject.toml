@@ -30,3 +30,5 @@ fraction-evaluate = 0.5
 local-epochs = 3
 learning-rate = 0.01
 batch-size = 64
+dlg-attack = false
+dlg-steps = 300
