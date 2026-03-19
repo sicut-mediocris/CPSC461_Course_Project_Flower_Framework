@@ -64,3 +64,46 @@ You can also override some of the settings for your `ClientApp` and `ServerApp` 
 ```bash
 flwr run . --run-config "num-server-rounds=5 learning-rate=0.05"
 ```
+
+---
+
+## ⚔️ Running the DLG Attack Demo
+
+The `attacks/dlg_attack.py` module implements the **Deep Leakage from Gradients (DLG)** attack ([Zhu et al., 2019 — arxiv:1906.08935](https://arxiv.org/abs/1906.08935)). Given only the gradient update that a client would send to the server, it attempts to reconstruct the client's private training images.
+
+### How it works
+
+```
+Global model weights (sent by server)
+         │
+         ▼
+Client trains on private image → computes gradients
+         │
+         ▼  ← adversary intercepts here
+DLG attack: random dummy data → optimise until dummy gradients ≈ real gradients
+         │
+         ▼
+Reconstructed private image
+```
+
+### Run the stand-alone demo
+
+From the **repo root**:
+
+```bash
+# Install src package first (needed for the model + data loader)
+pip install -e src/
+
+# Run the attack demo
+python -m attacks.dlg_attack
+```
+
+The demo will:
+1. Load the CNN model and a single Fashion-MNIST training sample.
+2. Capture the gradient update as an adversary would.
+3. Run 300 optimisation iterations to reconstruct the image.
+4. Print the reconstructed label and gradient loss at each 50-step checkpoint.
+
+### Integration with `ClientApp`
+
+`client_app.py` automatically imports `capture_gradients` from `dlg_attack.py` when the `attacks` directory is available. During each training round it captures the first-batch gradients **before** local training begins, storing them in `captured_gradients`. You can pass these directly to `run_dlg_attack()` for reconstruction experiments without modifying the FL training loop.
