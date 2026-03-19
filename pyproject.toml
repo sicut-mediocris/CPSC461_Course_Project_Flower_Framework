@@ -32,3 +32,4 @@ learning-rate = 0.01
 batch-size = 64
 dlg-attack = true
 dlg-steps = 300
+dlg-round = 1
